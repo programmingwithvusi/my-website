@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Levious (Vusi) Dhlamini — Developer & QA Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & base ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:      #0a0a0f;
+  --paper:    #f5f3ee;
+  --accent:   #00c896;
+  --accent2:  #1a6fff;
+  --dim:      #6b6b78;
+  --rule:     rgba(255,255,255,0.08);
+  --card-bg:  rgba(255,255,255,0.04);
+  --mono:     'Fira Code', monospace;
+  --display:  'Syne', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--display);
+  background: var(--ink);
+  color: #e8e6df;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── Custom cursor ───────────────────────────────────── */
+#cursor {
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.15s ease, background 0.2s;
+  transform: translate(-50%, -50%);
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 9998;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(0,200,150,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.35s ease, opacity 0.2s;
+  transform: translate(-50%, -50%);
+}
+a:hover ~ #cursor, button:hover ~ #cursor { transform: translate(-50%,-50%) scale(2); }
+
+/* ── Grid noise overlay ──────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem;
+  border-bottom: 1px solid var(--rule);
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(16px);
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+}
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--dim);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* ── Hero ────────────────────────────────────────────── */
+#hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 8rem 3rem 4rem;
+  overflow: hidden;
+}
+.hero-bg-text {
+  position: absolute; right: -2rem; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--display);
+  font-size: clamp(8rem, 18vw, 20rem);
+  font-weight: 800;
+  color: rgba(255,255,255,0.025);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: -0.04em;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.1s forwards;
+}
+h1 {
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.25s forwards;
+}
+h1 .name-accent { color: var(--accent); }
+h1 .name-dim { color: var(--dim); font-weight: 400; }
+.hero-role {
+  font-family: var(--mono);
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: var(--dim);
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.4s forwards;
+}
+.hero-role span { color: #e8e6df; }
+.hero-tags {
+  display: flex; flex-wrap: wrap; gap: 0.6rem;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.55s forwards;
+}
+.htag {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid rgba(0,200,150,0.25);
+  border-radius: 2px;
+  color: var(--accent);
+  background: rgba(0,200,150,0.06);
+  letter-spacing: 0.06em;
+  transition: background 0.2s, border-color 0.2s;
+}
+.htag:hover { background: rgba(0,200,150,0.14); border-color: var(--accent); }
+.hero-cta {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.7s forwards;
+}
+.btn {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  padding: 0.85rem 2rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  font-weight: 500;
+}
+.btn-primary:hover { background: transparent; color: var(--accent); }
+.btn-ghost {
+  background: transparent;
+  color: #e8e6df;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.btn-ghost:hover { border-color: #e8e6df; }
+
+/* ── Stats bar ───────────────────────────────────────── */
+.stats-bar {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: rgba(255,255,255,0.02);
+}
+.stat {
+  padding: 2rem 2.5rem;
+  border-right: 1px solid var(--rule);
+  opacity: 0;
+  animation: fadeUp 0.6s forwards;
+}
+.stat:nth-child(1) { animation-delay: 0.8s; }
+.stat:nth-child(2) { animation-delay: 0.9s; }
+.stat:nth-child(3) { animation-delay: 1.0s; }
+.stat:nth-child(4) { animation-delay: 1.1s; border-right: none; }
+.stat-num {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  display: block;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+  display: block;
+}
+
+/* ── Section commons ─────────────────────────────────── */
+section { position: relative; z-index: 1; padding: 6rem 3rem; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.section-label::after { content: ''; flex: 0 0 40px; height: 1px; background: var(--accent); }
+h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 3rem;
+  line-height: 1.1;
+}
+
+/* ── Skills ──────────────────────────────────────────── */
+#skills { background: rgba(255,255,255,0.01); }
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.skill-group {
+  background: var(--ink);
+  padding: 2rem;
+  transition: background 0.2s;
+}
+.skill-group:hover { background: rgba(255,255,255,0.04); }
+.sg-tier {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.tier-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.tier-strong .tier-dot { background: var(--accent); }
+.tier-mid .tier-dot    { background: #ffb347; }
+.tier-base .tier-dot   { background: var(--dim); }
+.tier-strong { color: var(--accent); }
+.tier-mid    { color: #ffb347; }
+.tier-base   { color: var(--dim); }
+.sg-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+.sg-desc {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+.sg-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.sg-pill {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 2px;
+  color: #b0aea8;
+  letter-spacing: 0.04em;
+}
+
+/* ── Experience timeline ─────────────────────────────── */
+#experience { border-top: 1px solid var(--rule); }
+.timeline { position: relative; padding-left: 2rem; }
+.timeline::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 1px; background: var(--rule);
+}
+.tl-item {
+  position: relative;
+  padding: 0 0 3.5rem 3rem;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+.tl-item.visible { opacity: 1; transform: translateX(0); }
+.tl-dot {
+  position: absolute; left: -6px; top: 6px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--accent);
+  transition: background 0.2s;
+}
+.tl-item:hover .tl-dot { background: var(--accent); }
+.tl-period {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.4rem;
+}
+.tl-role {
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.2rem;
+}
+.tl-company {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--dim);
+  margin-bottom: 1rem;
+}
+.tl-body {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: #9a9898;
+  line-height: 1.75;
+  max-width: 640px;
+}
+.tl-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.tl-tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.55rem;
+  background: rgba(0,200,150,0.08);
+  border: 1px solid rgba(0,200,150,0.18);
+  border-radius: 2px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* ── Projects ────────────────────────────────────────── */
+#projects { border-top: 1px solid var(--rule); background: rgba(255,255,255,0.01); }
+.projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule); }
+.proj-card {
+  background: var(--ink);
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.proj-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.proj-card:hover { background: rgba(255,255,255,0.03); }
+.proj-card:hover::before { transform: scaleX(1); }
+.proj-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+}
+.proj-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+}
+.proj-stack {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+.proj-desc {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--dim);
+  line-height: 1.75;
+}
+.proj-badge {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 2px;
+  color: #888;
+  letter-spacing: 0.08em;
+}
+.proj-badge.active { border-color: rgba(0,200,150,0.3); color: var(--accent); }
+
+/* ── Defect metrics feature ──────────────────────────── */
+#metrics {
+  border-top: 1px solid var(--rule);
+  background: linear-gradient(135deg, rgba(0,200,150,0.04) 0%, rgba(26,111,255,0.04) 100%);
+}
+.metrics-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.metrics-text p {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--dim);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+.defect-bars { display: flex; flex-direction: column; gap: 1.5rem; }
+.db-row { }
+.db-meta {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--dim);
+  margin-bottom: 0.5rem;
+}
+.db-meta span:last-child { color: var(--accent); font-weight: 500; }
+.db-track {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.db-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.23,1,0.32,1);
+}
+.db-fill.animated { }
+
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--rule);
+  padding: 2.5rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-left { font-family: var(--mono); font-size: 0.7rem; color: var(--dim); }
+.footer-left strong { color: var(--accent); }
+.footer-links { display: flex; gap: 1.5rem; }
+.footer-links a {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--dim); text-decoration: none;
+  letter-spacing: 0.08em;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--accent); }
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  #hero { padding: 7rem 1.5rem 3rem; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  section { padding: 4rem 1.5rem; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .metrics-inner { grid-template-columns: 1fr; gap: 2rem; }
+  footer { padding: 2rem 1.5rem; flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Nav -->
+<nav>
+  <span class="nav-logo">// vusi.dhlamini</span>
+  <ul class="nav-links">
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#metrics">Metrics</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-bg-text">DEV</div>
+  <p class="hero-eyebrow">// Available for opportunities</p>
+  <h1>
+    Levious<br>
+    <span class="name-dim">(</span><span class="name-accent">Vusi</span><span class="name-dim">)</span><br>
+    Dhlamini
+  </h1>
+  <p class="hero-role">
+    <span>Test Analyst</span> at SYSPRO &nbsp;·&nbsp;
+    <span>Full-Stack Developer</span> &nbsp;·&nbsp;
+    Johannesburg, ZA
+  </p>
+  <div class="hero-tags">
+    <span class="htag">C# / .NET</span>
+    <span class="htag">React / TypeScript</span>
+    <span class="htag">SQL</span>
+    <span class="htag">Visual Basic</span>
+    <span class="htag">Crystal Reports</span>
+    <span class="htag">Wyn Enterprise</span>
+    <span class="htag">Jenkins</span>
+    <span class="htag">Docker</span>
+    <span class="htag">Android / Cordova</span>
+    <span class="htag">Python</span>
+  </div>
+  <div class="hero-cta">
+    <a href="#experience" class="btn btn-primary">View Experience</a>
+    <a href="#projects" class="btn btn-ghost">See Projects</a>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-num">10</span>
+    <span class="stat-label">Years at SYSPRO</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">6.1→</span>
+    <span class="stat-label">SYSPRO Versions Tested</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">46.6%</span>
+    <span class="stat-label">Avg Defect Identification</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">3+</span>
+    <span class="stat-label">SaaS Products Built</span>
+  </div>
+</div>
+
+<!-- Skills -->
+<section id="skills">
+  <p class="section-label">01 — Competencies</p>
+  <h2>Technical Stack</h2>
+  <div class="skills-grid">
+
+    <div class="skill-group">
+      <div class="sg-tier tier-strong"><span class="tier-dot"></span>Strong</div>
+      <div class="sg-title">Backend & Systems</div>
+      <div class="sg-desc">Deep production experience building and maintaining enterprise .NET systems, ERP integrations, and Windows-native tooling.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">C#</span>
+        <span class="sg-pill">.NET 8</span>
+        <span class="sg-pill">ASP.NET</span>
+        <span class="sg-pill">Visual Basic</span>
+        <span class="sg-pill">REST APIs</span>
+        <span class="sg-pill">WMI</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="sg-tier tier-strong"><span class="tier-dot"></span>Strong</div>
+      <div class="sg-title">Frontend</div>
+      <div class="sg-desc">Building production-grade frontends with React, TypeScript and modern tooling including Vite and React Query.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">React</span>
+        <span class="sg-pill">TypeScript</span>
+        <span class="sg-pill">Vite</span>
+        <span class="sg-pill">React Query</span>
+        <span class="sg-pill">HTML / CSS</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="sg-tier tier-strong"><span class="tier-dot"></span>Strong</div>
+      <div class="sg-title">Data & Databases</div>
+      <div class="sg-desc">Strong relational model design, SQL query writing, and report development. Working knowledge of document-based NoSQL with MongoDB.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">SQL</span>
+        <span class="sg-pill">Relational Modelling</span>
+        <span class="sg-pill">SSIS</span>
+        <span class="sg-pill">MongoDB</span>
+        <span class="sg-pill">Report Writing</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="sg-tier tier-strong"><span class="tier-dot"></span>Strong</div>
+      <div class="sg-title">Reporting Services</div>
+      <div class="sg-desc">Specialist in ERP reporting — Crystal Reports and Wyn Enterprise across multi-environment rendering, data integrity, and accuracy validation.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">Crystal Reports</span>
+        <span class="sg-pill">Wyn Enterprise</span>
+        <span class="sg-pill">SRS Templates</span>
+        <span class="sg-pill">Data Validation</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="sg-tier tier-mid"><span class="tier-dot"></span>Intermediate</div>
+      <div class="sg-title">DevOps & Automation</div>
+      <div class="sg-desc">Jenkins pipelines for business object automation, Docker containerisation, GitHub Actions CI/CD, and Playwright end-to-end test automation.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">Jenkins</span>
+        <span class="sg-pill">Docker</span>
+        <span class="sg-pill">GitHub Actions</span>
+        <span class="sg-pill">Playwright</span>
+        <span class="sg-pill">MSTest</span>
+      </div>
+    </div>
+
+    <div class="skill-group">
+      <div class="sg-tier tier-mid"><span class="tier-dot"></span>Intermediate / Working</div>
+      <div class="sg-title">Mobile & Other</div>
+      <div class="sg-desc">Android app development with Apache Cordova. Python for scripting and automation. PHP for web backend tasks. Computer hardware and infrastructure.</div>
+      <div class="sg-pills">
+        <span class="sg-pill">Apache Cordova</span>
+        <span class="sg-pill">Android</span>
+        <span class="sg-pill">Python</span>
+        <span class="sg-pill">PHP</span>
+        <span class="sg-pill">Stripe</span>
+        <span class="sg-pill">Hardware</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Experience -->
+<section id="experience">
+  <p class="section-label">02 — Career</p>
+  <h2>Experience</h2>
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-period">June 2016 — Present · 10 Years</div>
+      <div class="tl-role">Test Analyst</div>
+      <div class="tl-company">SYSPRO (Pty) Ltd · Johannesburg, ZA</div>
+      <div class="tl-body">
+        Full testing lifecycle across SYSPRO 6.1 → 2026 R1. Authored standard test plan templates adopted team-wide. Specialised in Reporting Services (Crystal Reports, Wyn Enterprise), architecture testing, installation/configuration validation, and business object testing. Jenkins automation pipelines for regression. Currently leading QA on SYSPRO's SaaS modernisation and new licence manager rollout.
+      </div>
+      <div class="tl-tags">
+        <span class="tl-tag">Crystal Reports</span>
+        <span class="tl-tag">Wyn Enterprise</span>
+        <span class="tl-tag">Jenkins</span>
+        <span class="tl-tag">ERP Architecture</span>
+        <span class="tl-tag">SaaS Migration</span>
+        <span class="tl-tag">Business Objects</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-period">November 2011 — November 2015 · 4 Years</div>
+      <div class="tl-role">SYSPRO Infrastructure Technician</div>
+      <div class="tl-company">MSA Africa (Pty) Ltd</div>
+      <div class="tl-body">
+        Administered SYSPRO ERP environment (AP, AR, GL, Inventory, Sales Orders, WIP, SRS). Designed SSIS packages for report automation, managed multi-currency contract pricing databases, and handled all SYSPRO users, roles, and access control. SQL report writing and template configuration.
+      </div>
+      <div class="tl-tags">
+        <span class="tl-tag">SYSPRO Admin</span>
+        <span class="tl-tag">SQL</span>
+        <span class="tl-tag">SSIS</span>
+        <span class="tl-tag">ERP Configuration</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-period">December 2008 — October 2011 · 3 Years</div>
+      <div class="tl-role">IT Project Technician</div>
+      <div class="tl-company">SAMSAC (MSA / SelectPPE)</div>
+      <div class="tl-body">
+        Infrastructure deployment across 300+ store sites and mine locations. Citrix XenServer virtualisation, Symantec endpoint protection across 500 machines, domain and network configuration, VM lifecycle management across Server 2000–2012.
+      </div>
+      <div class="tl-tags">
+        <span class="tl-tag">Virtualisation</span>
+        <span class="tl-tag">Citrix XenServer</span>
+        <span class="tl-tag">Networking</span>
+        <span class="tl-tag">Windows Server</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-period">January 2005 — November 2008 · ~4 Years</div>
+      <div class="tl-role">Supervisor · IT Consultant · Network Administrator</div>
+      <div class="tl-company">Value Added Solution Technology (VAST)</div>
+      <div class="tl-body">
+        Network design and infrastructure — servers, clients, media, connectivity devices. ADSL and Cisco router programming. User and directory migrations, hardware/software upgrades.
+      </div>
+      <div class="tl-tags">
+        <span class="tl-tag">Network Design</span>
+        <span class="tl-tag">Cisco</span>
+        <span class="tl-tag">Server Admin</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Projects -->
+<section id="projects">
+  <p class="section-label">03 — Build Log</p>
+  <h2>Personal Projects</h2>
+  <div class="projects-grid">
+
+    <div class="proj-card">
+      <div class="proj-num">// 001</div>
+      <div class="proj-title">PCClarity</div>
+      <div class="proj-stack">.NET 8 · React/TypeScript · Stripe · Claude API · WMI</div>
+      <div class="proj-desc">Windows SaaS for PC health diagnostics. Real WMI-based metrics API, React/Vite frontend, Stripe subscription billing (R149/month Pro), and an AI assistant powered by the Claude API. Full end-to-end production SaaS.</div>
+      <span class="proj-badge active">// active</span>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-num">// 002</div>
+      <div class="proj-title">SciCalcApp</div>
+      <div class="proj-stack">Apache Cordova · JavaScript · Android</div>
+      <div class="proj-desc">Cross-platform mobile calculator and system monitor. Physics engines (E=mc², KE, heat transfer), battery/network monitoring, localStorage persistence, self-test suite, and a main menu grid. Built through a five-chapter structured progression.</div>
+      <span class="proj-badge">// completed</span>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-num">// 003</div>
+      <div class="proj-title">PlaywrightTests</div>
+      <div class="proj-stack">C# · Microsoft Playwright · MSTest · .NET 10</div>
+      <div class="proj-desc">End-to-end automated browser testing project. Covers test discovery, NuGet configuration, and full browser automation for web application QA pipelines. Targeting .NET 10 with MSTest.</div>
+      <span class="proj-badge active">// active</span>
+    </div>
+
+    <div class="proj-card">
+      <div class="proj-num">// 004</div>
+      <div class="proj-title">ERP QA Automation</div>
+      <div class="proj-stack">Jenkins · SYSPRO Business Objects · Test Planning</div>
+      <div class="proj-desc">Automated business object regression pipelines at SYSPRO using Jenkins. Authored the standard test plan template library adopted across the QA team. Reduced manual regression cycle overhead across major releases.</div>
+      <span class="proj-badge active">// enterprise</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- Defect Metrics -->
+<section id="metrics">
+  <p class="section-label">04 — Impact</p>
+  <h2>Defect Identification<br>Track Record</h2>
+  <div class="metrics-inner">
+    <div class="metrics-text">
+      <p>Across 10 years and three major SYSPRO product generations, consistently identified the majority of release-blocking defects before GA — averaging <strong style="color:#e8e6df">46.6%</strong> defect identification rate per release cycle.</p>
+      <p>This is measured as the percentage of all release defects found through QA processes before reaching production. The variation across versions reflects evolving product complexity and testing scope expansion.</p>
+      <p style="color: var(--accent); font-size: 0.72rem;">SYSPRO 6.1 → 2026 R1 · 10 years continuous</p>
+    </div>
+    <div class="defect-bars">
+      <div class="db-row">
+        <div class="db-meta"><span>SYSPRO 6</span><span>60%</span></div>
+        <div class="db-track"><div class="db-fill" data-width="60"></div></div>
+      </div>
+      <div class="db-row">
+        <div class="db-meta"><span>SYSPRO 7</span><span>30%</span></div>
+        <div class="db-track"><div class="db-fill" data-width="30"></div></div>
+      </div>
+      <div class="db-row">
+        <div class="db-meta"><span>SYSPRO 8</span><span>50%</span></div>
+        <div class="db-track"><div class="db-fill" data-width="50"></div></div>
+      </div>
+      <div class="db-row">
+        <div class="db-meta"><span>Average</span><span>46.6%</span></div>
+        <div class="db-track"><div class="db-fill" data-width="46.6" style="opacity:0.6"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-left">
+    <strong>Levious (Vusi) Dhlamini</strong> &nbsp;·&nbsp; Johannesburg, South Africa &nbsp;·&nbsp; Available for opportunities
+  </div>
+  <div class="footer-links">
+    <a href="#hero">↑ Top</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
+  </div>
+</footer>
+
+<script>
+// ── Custom cursor ─────────────────────────────────────
+const cursor     = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.transform = `translate(${mx}px, ${my}px) translate(-50%,-50%)`;
+});
+
+(function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`;
+  requestAnimationFrame(animRing);
+})();
+
+document.querySelectorAll('a, button, .proj-card, .skill-group').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform += ' scale(2)';
+    cursorRing.style.opacity = '0.3';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = cursor.style.transform.replace(' scale(2)', '');
+    cursorRing.style.opacity = '1';
+  });
+});
+
+// ── Intersection Observer: timeline items ─────────────
+const tlItems = document.querySelectorAll('.tl-item');
+const tlObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 120);
+    }
+  });
+}, { threshold: 0.15 });
+tlItems.forEach(el => tlObs.observe(el));
+
+// ── Intersection Observer: defect bars ────────────────
+const bars = document.querySelectorAll('.db-fill');
+const barObs = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) {
+    bars.forEach(bar => {
+      const w = bar.dataset.width;
+      setTimeout(() => { bar.style.width = w + '%'; }, 200);
+    });
+    barObs.disconnect();
+  }
+}, { threshold: 0.3 });
+const metricsSection = document.getElementById('metrics');
+if (metricsSection) barObs.observe(metricsSection);
+</script>
+</body>
+</html>
